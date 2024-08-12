@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: train-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: train
+  template:
+    metadata:
+      labels:
+        app: train
+    spec:
+      containers:
+      - name: train
+        image: kefkjb/train:latest
+        ports:
+        - containerPort: 5000
+        volumeMounts:
+        - name: volume-data
+          mountPath: /app/volume/data
+        - name: volume-models
+          mountPath: /app/volume/models
+      volumes:
+      - name: volume-data
+        persistentVolumeClaim:
+          claimName: pvc-data
+      - name: volume-models
+        persistentVolumeClaim:
+          claimName: pvc-models
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: train
+spec:
+  type: NodePort
+  selector:
+    app: train
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+      nodePort: 30001
