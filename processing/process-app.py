@@ -97,10 +97,19 @@ def handle_npz_file(file):
     """Process .npz file and return train and test datasets."""
     file_stream = io.BytesIO(file.read())
     data = np.load(file_stream)
-    x_train = data.get("x_train")
-    x_test = data.get("x_test")
-    y_train = data.get("y_train")
-    y_test = data.get("y_test")
+
+    # Check if train/test splits exist
+    if "x_train" in data and "x_test" in data and "y_train" in data and "y_test" in data:
+        x_train = data.get("x_train")
+        x_test = data.get("x_test")
+        y_train = data.get("y_train")
+        y_test = data.get("y_test")
+    else:
+        # If not, split the data
+        x = data.get('x')
+        y = data.get('y')
+        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=split_ratio)
+
     validate_data(x_train, x_test, y_train, y_test)
 
     # Reshape data if necessary to match the input shape
@@ -113,10 +122,19 @@ def handle_npy_file(file):
     """Process .npy file containing a dictionary and return train and test datasets."""
     file_stream = io.BytesIO(file.read())
     data = np.load(file_stream, allow_pickle=True).item()
-    x_train = data.get('x_train')
-    x_test = data.get('x_test')
-    y_train = data.get('y_train')
-    y_test = data.get('y_test')
+
+    # Check if train/test splits exist
+    if 'x_train' in data and 'x_test' in data and 'y_train' in data and 'y_test' in data:
+        x_train = data.get('x_train')
+        x_test = data.get('x_test')
+        y_train = data.get('y_train')
+        y_test = data.get('y_test')
+    else:
+        # If not, split the data
+        x = data.get('x')
+        y = data.get('y')
+        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=split_ratio)
+
     validate_data(x_train, x_test, y_train, y_test)
 
     # Reshape data if necessary to match the input shape
@@ -139,23 +157,14 @@ def handle_zip_file(file):
     if not image_files:
         raise ValueError("No image files found in the zip archive.")
 
-    images, labels = process_images(image_files)
-    images = np.array(images)
-    labels = np.array(labels)
-
-    return train_test_split(images, labels, test_size=split_ratio)
-
-def process_images(image_files):
-    """Process images from files and extract labels."""
     images = []
     labels = []
     for image_file in image_files:
         try:
             # Read and process image file
             img = cv2.imread(image_file, cv2.IMREAD_GRAYSCALE)
-            img = cv2.resize(img, input_shape[:2])
-            img = np.array(img) / 255.0  # Normalize to [0, 1]
-            img = img.reshape(input_shape)  # Ensure correct shape
+            img = cv2.resize(img, input_shape[:2]) # Resize for consistency
+            img = np.array(img).reshape(input_shape)  # Ensure correct shape
             images.append(img)
             labels.append(get_label_from_filename(image_file))
         except Exception as e:
@@ -164,7 +173,16 @@ def process_images(image_files):
     if not images or not labels:
         raise ValueError("No images processed or no labels extracted")
 
-    return images, labels
+    images = np.array(images)
+    labels = np.array(labels)
+
+    # Normalize the image data to the range [0, 1]
+    images = images / 255.0
+
+    # Split data
+    x_train, x_test, y_train, y_test = train_test_split(images, labels, test_size=split_ratio)
+    
+    return x_train, x_test, y_train, y_test
 
 def get_label_from_filename(filename):
     """Extract label from filename. Placeholder function."""
@@ -188,3 +206,4 @@ def cleanup_tmp_directory():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
+
