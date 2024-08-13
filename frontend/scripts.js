@@ -22,6 +22,33 @@ function listData() {
         });
 }
 
+// Function to ensure the default section is shown
+function showDefaultSection() {
+    const defaultService = document.querySelector('.service[service-type="data-processing"]');
+    const defaultContent = document.getElementById('data-processing');
+
+    // Set the default service as active
+    document.querySelectorAll('.service').forEach(t => t.classList.remove('active'));
+    defaultService.classList.add('active');
+
+    // Show the default content
+    document.querySelectorAll('.service-content').forEach(content => {
+        content.style.display = 'none';
+        content.style.opacity = 0;
+    });
+    defaultContent.style.display = 'block';
+    defaultContent.style.opacity = 1;
+}
+
+// Call showDefaultSection on window load
+window.onload = showDefaultSection;
+
+// Update file name display when a file is chosen
+document.getElementById('dataset_file').addEventListener('change', function() {
+    const fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+    document.getElementById('fileName').textContent = fileName;
+});
+
 // Function to load models from the server
 function listModel() {
     const modelSelect = document.getElementById('model_folder');
@@ -46,7 +73,6 @@ function listModel() {
         });
 }
 
-
 // Checks for clicks on other services
 document.querySelectorAll('.service').forEach(service => {
     service.addEventListener('click', function() {
@@ -56,11 +82,20 @@ document.querySelectorAll('.service').forEach(service => {
         service.classList.add('active');
         const serviceType = service.getAttribute('service-type');
         
-        // Show content of active service
+        // Hide the currently visible content
         document.querySelectorAll('.service-content').forEach(content => {
-            content.style.display = 'none';
+            content.style.opacity = 0;
+            setTimeout(() => {
+                content.style.display = 'none';
+            }, 500); // Delay to match the fade-out transition
         });
-        document.getElementById(serviceType).style.display = 'block';
+
+        // Show the newly selected content with a fade-in effect
+        const newContent = document.getElementById(serviceType);
+        setTimeout(() => {
+            newContent.style.display = 'block';
+            newContent.style.opacity = 1;
+        }, 500); // Delay to match the fade-in transition
 
         // Specific service logic
         if (serviceType === 'training') {
@@ -71,6 +106,7 @@ document.querySelectorAll('.service').forEach(service => {
     });
 });
 
+// Handle form submission for the data processing section
 document.getElementById('uploadDataset').addEventListener('submit', function(event) {
     event.preventDefault();
 
@@ -105,7 +141,6 @@ document.getElementById('trainModel').addEventListener('submit', function(event)
     document.getElementById('trainLoading').style.display = 'block';
     document.getElementById('trainingOutput').style.display = 'none';
 
-
     const dataset = document.getElementById('data_folder').value;
     const modelName = document.getElementById('model_name').value;
 
@@ -137,7 +172,7 @@ document.getElementById('trainModel').addEventListener('submit', function(event)
     });
 });
 
-
+// Handle form submission for the inference section
 document.getElementById('makeInference').addEventListener('submit', function(event) {
     event.preventDefault();
 
@@ -152,12 +187,86 @@ document.getElementById('makeInference').addEventListener('submit', function(eve
     .then(response => response.json())
     .then(data => {
         document.getElementById('inferLoading').style.display = 'none';
-        document.getElementById('predictOutput').textContent = `Predicted Digit: ${data.prediction}`
+        document.getElementById('predictOutput').textContent = `Predicted Digit: ${data.prediction}`;
         document.getElementById('inferenceOutput').style.display = 'block';
     })
     .catch(error => {
         document.getElementById('inferLoading').style.display = 'none';
-        alert('Error uploading dataset');
+        alert('Error during inference');
         console.error('Error:', error);
     });
 });
+
+// Update file name display when a file is chosen in the Inference section
+document.getElementById('test_image').addEventListener('change', function() {
+    const fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+    document.getElementById('fileName').textContent = fileName;
+});
+
+// Function to update file name display when a file is chosen
+function updateFileName(inputElement, fileNameElementId) {
+    const fileName = inputElement.files[0] ? inputElement.files[0].name : 'No file chosen';
+    document.getElementById(fileNameElementId).textContent = fileName;
+}
+
+// Attach event listeners to both file inputs
+document.getElementById('dataset_file').addEventListener('change', function() {
+    updateFileName(this, 'fileNameDataset');
+});
+
+document.getElementById('test_image').addEventListener('change', function() {
+    updateFileName(this, 'fileNameImage');
+});
+
+// Drawing on the canvas
+const canvas = document.getElementById('drawingCanvas');
+const ctx = canvas.getContext('2d');
+let drawing = false;
+
+canvas.addEventListener('mousedown', startDrawing);
+canvas.addEventListener('mouseup', stopDrawing);
+canvas.addEventListener('mousemove', draw);
+document.getElementById('clearCanvas').addEventListener('click', clearCanvas);
+document.getElementById('uploadDrawing').addEventListener('click', uploadDrawing);
+
+function startDrawing(event) {
+    drawing = true;
+    draw(event); // Draw a point where the mouse is initially pressed down
+}
+
+function stopDrawing() {
+    drawing = false;
+    ctx.beginPath(); // Begin a new path, so it doesn't connect with the previous lines
+}
+
+function draw(event) {
+    if (!drawing) return;
+
+    ctx.lineWidth = 10;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'white';
+
+    ctx.lineTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
+}
+
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function uploadDrawing() {
+    canvas.toBlob(function(blob) {
+        const file = new File([blob], "drawing.png", { type: "image/png" });
+
+        // Set the file input to the generated file from the canvas drawing
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        document.getElementById('test_image').files = dataTransfer.files;
+
+        alert('Drawing uploaded as image!');
+    });
+}
+
+
