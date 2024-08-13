@@ -50,15 +50,30 @@ def CNN_model(input_shape, lr):
 
     # Create architecture based on config map
     for layer in architecture:
-        param = layer[1]
-        if layer[0] == "conv":
-            model.add(layers.Conv2D(param[0], (param[1], param[2]), activation=param[3]))
-        elif layer[0] == "pool":
-            model.add(layers.MaxPooling2D((param[0], param[1])))
-        elif layer[0] == "flatten":
+        if layer["type"] == "conv":
+            model.add(layers.Conv2D(
+                filters=layer["filters"],
+                kernel_size=layer["size"],
+                strides=layer["strides"],
+                padding=layer["padding"],
+                activation=layer["activation"]
+            ))
+        elif layer["type"] == "max_pool":
+            model.add(layers.MaxPooling2D(
+                pool_size=layer["size"],
+                strides=layer["strides"]
+            ))
+        elif layer["type"] == "flatten":
             model.add(layers.Flatten())
-        elif layer[0] == "dense":
-            model.add(layers.Dense(param[0], activation=param[1]))
+        elif layer["type"] == "dense":
+            model.add(layers.Dense(
+                units=layer["units"],
+                activation=layer["activation"]
+            ))
+        elif layer["type"] == "dropout":
+            model.add(layers.Dropout(rate=layer["rate"]))
+        elif layer["type"] == "batch_norm":
+            model.add(layers.BatchNormalization(axis=layer["axis"]))
     
     opt = keras.optimizers.Adam(learning_rate=lr)
     model.compile(
