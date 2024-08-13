@@ -163,7 +163,7 @@ def handle_zip_file(file):
         try:
             # Read and process image file
             img = cv2.imread(image_file, cv2.IMREAD_GRAYSCALE)
-            img = cv2.resize(img, input_shape[:2])
+            img = cv2.resize(img, input_shape[:2]) # Resized for consistency
             img = np.array(img).reshape(input_shape)  # Ensure correct shape
             images.append(img)
             labels.append(get_label_from_filename(image_file))
@@ -178,11 +178,12 @@ def handle_zip_file(file):
 
     # Normalize the image data to the range [0, 1]
     images = images / 255.0
-
+    
     # Convert labels to integers if necessary
-    unique_labels = np.unique(labels)
-    label_to_int = {label: i for i, label in enumerate(unique_labels)}
-    labels = np.array([label_to_int[label] for label in labels])
+    if not np.issubdtype(labels.dtype, np.integer):
+        unique_labels = np.unique(labels)
+        label_to_int = {label: i for i, label in enumerate(unique_labels)}
+        labels = np.array([label_to_int[label] for label in labels])
 
     # Split data
     x_train, x_test, y_train, y_test = train_test_split(images, labels, test_size=split_ratio)
