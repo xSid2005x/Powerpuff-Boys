@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: train-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: train
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 300
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: train
+    spec:
+      containers:
+      - name: train-container
+        image: kefkjb/train:3.0
+        ports:
+        - containerPort: 5002
+        volumeMounts:
+        - name: volume-data
+          mountPath: /app/volume/data
+        - name: volume-models
+          mountPath: /app/volume/models
+        - name: config-volume
+          mountPath: /app/config
+      volumes:
+      - name: volume-data
+        persistentVolumeClaim:
+          claimName: pvc-data
+      - name: volume-models
+        persistentVolumeClaim:
+          claimName: pvc-models
+      - name: config-volume
+        configMap:
+          name: config-map
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: train-service
+spec:
+  selector:
+    app: train
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5002

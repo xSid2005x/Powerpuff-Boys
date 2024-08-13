@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: preprocess-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: preprocess
+  template:
+    metadata:
+      labels:
+        app: preprocess
+    spec:
+      containers:
+      - name: preprocess-container
+        image: kefkjb/preprocess:1.0
+        ports:
+        - containerPort: 5001
+        volumeMounts:
+        - name: volume-data
+          mountPath: /app/volume/data
+        - name: config-volume
+          mountPath: /app/config
+      volumes:
+      - name: volume-data
+        persistentVolumeClaim:
+          claimName: pvc-data
+      - name: config-volume
+        configMap:
+          name: config-map
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: preprocess
+spec:
+  selector:
+    app: preprocess
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5001

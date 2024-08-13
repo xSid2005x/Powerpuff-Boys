@@ -1,0 +1,55 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: front-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: power-puff.boys
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: back-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: power-puff.boys
+      http:
+        paths:
+          - path: /process(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: preprocess
+                port:
+                  number: 80
+          - path: /train(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: train-service
+                port:
+                  number: 80
+          - path: /inference(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: inference
+                port:
+                  number: 80

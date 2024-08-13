@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Solution</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div class="container">
+        <!--Buttons to navigate to different services-->
+        <div class="services">
+            <div class="service active" service-type="data-processing">Data Processing</div>
+            <div class="service" service-type="training">Training</div>
+            <div class="service" service-type="inference">Inference</div>
+        </div>
+
+        <!--Div that contains data processing components-->
+        <div class="service-content" id="data-processing" style="display:block;">
+            <form id="uploadDataset" action="http://power-puff.boys/process/upload" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="dataset_file">Upload Dataset:</label>
+                    <input type="file" id="dataset_file" name="dataset_file" accept=".npy, .npz, .zip" required>
+                </div>
+                <div class="form-group">
+                    <label for="dataset_name">Dataset Name:</label>
+                    <input type="text" id="dataset_name" name="dataset_name" value="Data" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit">Submit</button>
+                </div>
+            </form>
+
+            <!--Loading and output section-->
+            <div class="loading" id="processLoading">
+                <img src="loading-icon.gif" alt="Loading...">
+            </div>
+
+            <div class="service-output" id="processingOutput">
+                <h3>Dataset Shape:</h3>
+                <div id="xtrainOutput"></div>
+                <div id="xtestOutput"></div>
+                <div id="ytrainOutput"></div>
+                <div id="ytestOutput"></div>
+            </div>
+        </div>
+
+        <!--Div that contains training components-->
+        <div class="service-content" id="training">
+            <form id="trainModel" action="http://power-puff.boys/train/train" method="POST">
+                <div class="form-group">
+                    <label for="data_folder">Select Dataset:</label>
+                    <select id="data_folder" name="data_folder" required>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="model_name">Model Name:</label>
+                    <input type="text" id="model_name" name="model_name" value="Model" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit">Submit</button>
+                </div>
+            </form>
+
+            <!--Loading and output section-->
+            <div class="loading" id="trainLoading">
+                <img src="loading-icon.gif" alt="Loading...">
+            </div>
+
+            <div class="service-output" id="trainingOutput">
+                <h3>Model Perfomance:</h3>
+                <div id="accuracyOutput"></div>
+                <img id="lossOutput"></img>
+            </div>
+        </div>
+
+        <!--Div that contains inference components-->
+        <div class="service-content" id="inference">
+            <form id="makeInference" action="http://power-puff.boys/inference/predict" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="model_folder">Select Model:</label>
+                    <select id="model_folder" name="model_folder" required>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="test_image">Upload Image:</label>
+                    <input type="file" id="test_image" name="test_image" accept=".png, .jpg, .webp" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit">Submit</button>
+                </div>
+            </form>
+
+            <!--Loading and output section-->
+            <div class="loading" id="inferLoading">
+                <img src="loading-icon.gif" alt="Loading...">
+            </div>
+
+            <div class="service-output" id="inferenceOutput">
+                <h3>Prediction:</h3>
+                <div id="predictOutput"></div>
+            </div>
+        </div>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+</html>
