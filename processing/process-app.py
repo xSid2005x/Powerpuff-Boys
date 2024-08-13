@@ -1,27 +1,32 @@
-from flask import Flask, request, jsonify
-import numpy as np
-import json
-import io
 import os
+import io
+import json
+import numpy as np
+import logging
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
-from flask_cors import CORS
+import zipfile
+import cv2
 
-# Load configs
+# Load configurations from JSON file
 with open("config/config.json", "r") as f:
     config = json.load(f)
-data_volume = config["data_volume"]
-split_ratio = config["split_ratio"]
-input_shape = tuple(config['input_shape'])
 
+data_folder = config["data_volume"]  # Directory to save processed data
+split_ratio = config["split_ratio"]  # Ratio to split data into train and test sets
+input_shape = tuple(config['input_shape'])  # Desired shape of input data
+
+# Setup logging to track processing
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
-CORS(app)
-
+CORS(app)  # Enable Cross-Origin Resource Sharing
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    # Check if file was properly uploaded
+    # Check if file is provided in the request
     if 'dataset_file' not in request.files:
         return jsonify({"Missing Data": "File field missing"}), 401
 
@@ -29,88 +34,148 @@ def upload_file():
     if file.filename == '' or not file:
         return jsonify({"Invalid Data": "Invalid file"}), 402
 
-    # Check if dataset name is present
+    # Get dataset name from the request
     dataset_name = request.form.get('dataset_name')
     if not dataset_name:
         return jsonify({"Missing Data": "Name missing"}), 401
 
-    # Process the dataset
-    message = process_data(file, dataset_name)
-    
+    try:
+        # Process the uploaded data
+        message = process_data(file, dataset_name)
+    except Exception as e:
+        logging.error(f"Error processing data: {e}")
+        return jsonify({"Error": str(e)}), 500
+
     return jsonify(message), 200
 
 def process_data(file, dataset_name):
+    # Determine the file extension to decide processing method
+    file_ext = os.path.splitext(file.filename)[1]
 
-    # Cook This --------------------------------------------------------------------------------------------
-    
-    # Load different file types. Either npy, npz or zip folder containing images
-    # Also state the assumptions, for example the npz file alread had the 4 (x_train, x_test, etc.)
-
-    pass
-    # if filename.endswith('.npz'):
-    #     data = np.load(filename)
-    #     keys = list(data.keys())
-    #     if len(keys) == 0:
-    #         raise ValueError("No data found in the .npz file.")
-    #     X = data[keys[0]]
-    # elif filename.endswith('.npy'):
-    #     X = np.load(filename)
-    # else:
-    #     raise ValueError("Unsupported file format. Please upload a .npz, .npy, or .csv file.")
-    
-
-    # Depending on the file assumption, there may or may not need to be a data split part
-    # There is a config split ratio, use that if u need to split data
-    pass
-
-
-
-    # Look into image transformations to normalize and resize the images
-    # Something like pytorch maybe?
-    pass
-    
-
-
-
-    # ------------------------------------------------------------------------------------------------------
-
-    
-    # Assuming npz file has 4 keys for the 4 datasets
-    if file.filename.endswith('.npz'):
-        file_stream = io.BytesIO(file.read())
-        data = np.load(file_stream)
+    if file_ext == '.npz':
+        x_train, x_test, y_train, y_test = handle_npz_file(file)
+    elif file_ext == '.npy':
+        x_train, x_test, y_train, y_test = handle_npy_file(file)
+    elif file_ext == '.zip':
+        x_train, x_test, y_train, y_test = handle_zip_file(file)
     else:
-        return jsonify({"Invalid Data": "Invalid file"}), 402
+        raise ValueError("Unsupported file format")
 
-    # Obtain each data split
-    x_train = data["x_train"]
-    x_test = data["x_test"]
-    y_train = data["y_train"]
-    y_test = data["y_test"]
-
-    # Normalize the data
+    # Normalize image data to the range [0, 1]
     x_train, x_test = x_train / 255.0, x_test / 255.0
 
-    # One-hot encode the labels
+    # One-hot encode labels for classification tasks
     y_train = to_categorical(y_train)
     y_test = to_categorical(y_test)
-    
+
+    # Log the shapes of the processed data
+    logging.info(f"x_train shape: {x_train.shape}")
+    logging.info(f"x_test shape: {x_test.shape}")
+    logging.info(f"y_train shape: {y_train.shape}")
+    logging.info(f"y_test shape: {y_test.shape}")
+
     # Save the processed data into separate .npy files
-    data_path = os.path.join(data_volume, dataset_name)
+    data_path = os.path.join(data_folder, dataset_name)
     os.makedirs(data_path, exist_ok=True)
     np.save(os.path.join(data_path, 'x_train.npy'), x_train)
     np.save(os.path.join(data_path, 'x_test.npy'), x_test)
     np.save(os.path.join(data_path, 'y_train.npy'), y_train)
     np.save(os.path.join(data_path, 'y_test.npy'), y_test)
 
-    message = {
+    return {
         'x_train': x_train.shape,
         'x_test': x_test.shape,
         'y_train': y_train.shape,
-        'y_test': x_test.shape,
+        'y_test': y_test.shape,
     }
-    return message
 
+def handle_npz_file(file):
+    """Process .npz file and return train and test datasets."""
+    file_stream = io.BytesIO(file.read())
+    data = np.load(file_stream)
+    x_train = data.get("x_train")
+    x_test = data.get("x_test")
+    y_train = data.get("y_train")
+    y_test = data.get("y_test")
+    validate_data(x_train, x_test, y_train, y_test)
+
+    # Reshape data if necessary to match the input shape
+    x_train = reshape_data(x_train)
+    x_test = reshape_data(x_test)
+
+    return x_train, x_test, y_train, y_test
+
+def handle_npy_file(file):
+    """Process .npy file containing a dictionary and return train and test datasets."""
+    file_stream = io.BytesIO(file.read())
+    data = np.load(file_stream, allow_pickle=True).item()
+    x_train = data.get('x_train')
+    x_test = data.get('x_test')
+    y_train = data.get('y_train')
+    y_test = data.get('y_test')
+    validate_data(x_train, x_test, y_train, y_test)
+
+    # Reshape data if necessary to match the input shape
+    x_train = reshape_data(x_train)
+    x_test = reshape_data(x_test)
+
+    return x_train, x_test, y_train, y_test
+
+def handle_zip_file(file):
+    """Process .zip file containing images and return train and test datasets."""
+    extract_path = "tmp"  # Directory to extract the zip file
+    if not os.path.exists(extract_path):
+        os.makedirs(extract_path)
+    with zipfile.ZipFile(file, 'r') as zip_ref:
+        zip_ref.extractall(extract_path)
+
+    # Find and process all image files in the extracted directory
+    image_files = [os.path.join(root, file) for root, dirs, files in os.walk(extract_path) for file in files if file.endswith(('png', 'jpg', 'jpeg'))]
+    
+    if not image_files:
+        raise ValueError("No image files found in the zip archive.")
+
+    images, labels = process_images(image_files)
+    images = np.array(images)
+    labels = np.array(labels)
+
+    return train_test_split(images, labels, test_size=split_ratio)
+
+def process_images(image_files):
+    """Process images from files and extract labels."""
+    images = []
+    labels = []
+    for image_file in image_files:
+        try:
+            # Read and process image file
+            img = cv2.imread(image_file, cv2.IMREAD_GRAYSCALE)
+            img = cv2.resize(img, input_shape[:2])
+            img = np.array(img) / 255.0  # Normalize to [0, 1]
+            img = img.reshape(input_shape)  # Ensure correct shape
+            images.append(img)
+            labels.append(get_label_from_filename(image_file))
+        except Exception as e:
+            logging.error(f"Error processing file {image_file}: {e}")
+
+    if not images or not labels:
+        raise ValueError("No images processed or no labels extracted")
+
+    return images, labels
+
+def get_label_from_filename(filename):
+    """Extract label from filename. Placeholder function."""
+    return 0  # Placeholder logic for labels
+
+def validate_data(x_train, x_test, y_train, y_test):
+    """Validate that all required data arrays are present."""
+    if x_train is None or x_test is None or y_train is None or y_test is None:
+        raise ValueError("Missing keys in data file")
+
+def reshape_data(data):
+    """Reshape data to match the input shape."""
+    if data.shape[1:] != input_shape:
+        data = data.reshape(-1, *input_shape)
+    return data
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001)
+    app.run(host='0.0.0.0', port=5001, debug=True)
