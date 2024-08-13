@@ -46,9 +46,11 @@ def preprocess_image(image, size=(28, 28, 1)):
 
 def make_prediction(model, image):
     logging.info("Making prediction")
-    prediction = model.predict(image)
-    logging.info("Prediction completed")
-    return np.argmax(prediction)
+    prediction_probs = model.predict(image)
+    predicted_class = np.argmax(prediction_probs)
+    confidence = np.max(prediction_probs)
+    logging.info(f"Prediction completed with confidence {confidence:.2f}")
+    return predicted_class, confidence
 
 @app.route("/list_models", methods=["GET"])
 def list_data():
@@ -91,11 +93,11 @@ def predict():
         return jsonify({'error': f'Failed to load model: {str(e)}'}), 400
 
     # Make a prediction
-    prediction = make_prediction(model, processed_image)
-    logging.info(f"Predicted Digit: {prediction}")
+    predicted_class, confidence = make_prediction(model, processed_image)
+    logging.info(f"Predicted Digit: {predicted_class} with confidence: {confidence:.2f}")
 
-    # Return the prediction as JSON
-    return jsonify({'prediction': int(prediction)}), 200
+    # Return the prediction and confidence as JSON
+    return jsonify({'prediction': int(predicted_class), 'confidence': float(confidence)}), 200
 
 if __name__ == "__main__":
     logging.info("Starting Flask server")
