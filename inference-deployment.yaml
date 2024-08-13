@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inference-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inference
+  template:
+    metadata:
+      labels:
+        app: inference
+    spec:
+      containers:
+      - name: inference-container
+        image: kefkjb/infer:1.0
+        ports:
+        - containerPort: 5003
+        volumeMounts:
+        - name: volume-models
+          mountPath: /app/volume/models
+        - name: config-volume
+          mountPath: /app/config
+      volumes:
+      - name: volume-models
+        persistentVolumeClaim:
+          claimName: pvc-models
+      - name: config-volume
+        configMap:
+          name: config-map
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inference
+spec:
+  selector:
+    app: inference
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5003
+
+
+
