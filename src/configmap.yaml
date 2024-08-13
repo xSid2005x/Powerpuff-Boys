@@ -5,6 +5,8 @@ metadata:
 data:
   config.json: |
     {
+      "data_volume": "volume/data",
+      "model_volume": "volume/models",
       "input_shape": [28, 28, 1],
       "split_ratio": 0.2,
       "batch_size": 128,

@@ -1,9 +1,14 @@
+import matplotlib
+matplotlib.use('Agg')
+
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import numpy as np
 import keras as keras
 from keras import models, layers
-import os
+import matplotlib.pyplot as plt
 import io
+import os
 import sys
 import base64
 import json
@@ -12,10 +17,12 @@ import json
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
-with open("/app/config/config.json", "r") as f:
+with open("config/config.json", "r") as f:
     config = json.load(f)
 
 # Parameters
+data_volume = config["data_volume"]
+model_volume = config["model_volume"]
 input_shape = tuple(config['input_shape'])
 batch_size = config['batch_size']
 epochs = config['epochs']
@@ -23,6 +30,7 @@ lr = config['lr']
 architecture = config['architecture']
 
 app = Flask(__name__)
+CORS(app)
 
 def load_data(data_path):
     """Load individual data from data folder."""
@@ -59,17 +67,13 @@ def CNN_model(input_shape, lr):
     return model
 
 
-# If loss image is used
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-
 def create_loss_plot(history):
     """Create loss plot image from the training history"""
     img_buffer = io.BytesIO()
     plt.figure()
     plt.plot(history.history['loss'], label='loss')
     plt.plot(history.history['val_loss'], label='val_loss')
+    plt.title('Loss vs Epoches')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
@@ -80,19 +84,32 @@ def create_loss_plot(history):
     return img
 
 
+@app.route("/list_data", methods=["GET"])
+def list_data():
+    try: 
+        datasets = []
+        for file in os.listdir(data_volume):
+            if os.path.isdir(os.path.join(data_volume, file)):
+                datasets.append(file)
+        return jsonify({"datasets": datasets}), 200
+    except Exception as e:
+        return jsonify({"Error": str(e)}), 402
+
+
 @app.route("/train", methods=["POST"])
 def train():
     try:
         data = request.json
 
         # Check if required fields are present
-        if not data or "data" not in data or "model" not in data:
+        if not data or "data_folder" not in data or "model_name" not in data:
             return jsonify({"Missing data": "Request fields missing"}), 401
         else:
-            data_path = data.get("data")
-            model_name = data.get("model")
+            data_folder = data.get("data_folder")
+            model_name = data.get("model_name")
         
         # Check if data folder exists
+        data_path = os.path.join(data_volume, data_folder)
         if not os.path.exists(data_path):
             return jsonify({"Mising data": "Data folder not found"}), 401
 
@@ -120,18 +137,18 @@ def train():
         
         # Save model
         try:
-            model.save(f"volume/models/{model_name}.keras")
+            model.save(f"{model_volume}/{model_name}.keras")
         except Exception as e:
             return jsonify({"Failed to save model": str(e)}), 402
 
         # Success message
         message = {
-            "Accuracy": acc,
-            "Loss": img
+            "accuracy": acc,
+            "loss": img
         }
         return jsonify(message), 200
     except Exception as e:
         return jsonify({"Error": str(e)}), 402
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5002)

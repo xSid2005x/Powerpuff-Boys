@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: train-deployment
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: train
@@ -21,10 +21,10 @@ spec:
         app: train
     spec:
       containers:
-      - name: train
-        image: kefkjb/train:2.0
+      - name: train-container
+        image: kefkjb/train:3.0
         ports:
-        - containerPort: 5000
+        - containerPort: 5002
         volumeMounts:
         - name: volume-data
           mountPath: /app/volume/data
@@ -46,13 +46,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: train
+  name: train-service
 spec:
-  type: NodePort
   selector:
     app: train
   ports:
     - protocol: TCP
-      port: 5000
-      targetPort: 5000
-      nodePort: 30001
+      port: 80
+      targetPort: 5002
