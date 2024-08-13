@@ -3,25 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Solution</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <title>AI Solution Development</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <!--Buttons to navigate to different services-->
+        <div class="header">
+            <img src="images/logo.png" alt="Powerpuff Boys Logo" class="logo"> <!-- Logo added here -->
+            <div class="title-container">
+                <h1>AI Solution Development</h1>
+                <h2 class="subheading">Powerpuff Boys</h2>
+            </div>
+        </div>
         <div class="services">
             <div class="service active" service-type="data-processing">Data Processing</div>
             <div class="service" service-type="training">Training</div>
             <div class="service" service-type="inference">Inference</div>
         </div>
 
-        <!--Div that contains data processing components-->
+        <!-- Div that contains data processing components -->
         <div class="service-content" id="data-processing" style="display:block;">
             <form id="uploadDataset" action="http://power-puff.boys/process/upload" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="dataset_file">Upload Dataset:</label>
+                    <label for="dataset_file" class="custom-file-upload">
+                        Choose File
+                    </label>
                     <input type="file" id="dataset_file" name="dataset_file" accept=".npy, .npz, .zip" required>
+                    <span class="file-name" id="fileNameDataset">No file chosen</span> <!-- File name display for Data Processing -->
                 </div>
                 <div class="form-group">
                     <label for="dataset_name">Dataset Name:</label>
@@ -32,9 +43,9 @@
                 </div>
             </form>
 
-            <!--Loading and output section-->
+            <!-- Loading and output section -->
             <div class="loading" id="processLoading">
-                <img src="loading-icon.gif" alt="Loading...">
+                <img src="images/loading-icon.gif" alt="Loading...">
             </div>
 
             <div class="service-output" id="processingOutput">
@@ -46,7 +57,7 @@
             </div>
         </div>
 
-        <!--Div that contains training components-->
+        <!-- Div that contains training components -->
         <div class="service-content" id="training">
             <form id="trainModel" action="http://power-puff.boys/train/train" method="POST">
                 <div class="form-group">
@@ -63,19 +74,19 @@
                 </div>
             </form>
 
-            <!--Loading and output section-->
+            <!-- Loading and output section -->
             <div class="loading" id="trainLoading">
-                <img src="loading-icon.gif" alt="Loading...">
+                <img src="images/loading-icon.gif" alt="Loading...">
             </div>
 
             <div class="service-output" id="trainingOutput">
-                <h3>Model Perfomance:</h3>
+                <h3>Model Performance:</h3>
                 <div id="accuracyOutput"></div>
-                <img id="lossOutput"></img>
+                <img id="lossOutput" alt="Model Loss"></img>
             </div>
         </div>
 
-        <!--Div that contains inference components-->
+        <!-- Div that contains inference components -->
         <div class="service-content" id="inference">
             <form id="makeInference" action="http://power-puff.boys/inference/predict" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
@@ -85,16 +96,35 @@
                 </div>
                 <div class="form-group">
                     <label for="test_image">Upload Image:</label>
-                    <input type="file" id="test_image" name="test_image" accept=".png, .jpg, .webp" required>
+                    <label for="test_image" class="custom-file-upload">
+                        Choose File
+                    </label>
+                    <input id="test_image" name="test_image" type="file" required />
+                    <div class="file-name" id="fileNameImage">No file chosen</div> <!-- File name display for Inference -->
                 </div>
+
+                <!-- Canvas for drawing -->
+                <div class="form-group">
+                    <label for="drawingCanvas">Draw a Number:</label>
+                    <canvas id="drawingCanvas" width="280" height="280"></canvas>
+                </div>
+
+                <div class="form-group">
+                    <button type="button" id="clearCanvas">Clear Canvas</button>
+                </div>
+
+                <div class="form-group">
+                    <button type="button" id="uploadDrawing">Upload Drawing</button>
+                </div>
+
                 <div class="form-group">
                     <button type="submit">Submit</button>
                 </div>
             </form>
 
-            <!--Loading and output section-->
+            <!-- Loading and output section -->
             <div class="loading" id="inferLoading">
-                <img src="loading-icon.gif" alt="Loading...">
+                <img src="images/loading-icon.gif" alt="Loading...">
             </div>
 
             <div class="service-output" id="inferenceOutput">
@@ -103,6 +133,7 @@
             </div>
         </div>
     </div>
+
     <script src="scripts.js"></script>
 </body>
 </html>
