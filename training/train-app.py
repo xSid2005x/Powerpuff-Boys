@@ -1,3 +1,4 @@
+# Configure matplotlib to use non-interactive backend
 import matplotlib
 matplotlib.use('Agg')
 
@@ -17,10 +18,11 @@ import json
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
+# Read config file
 with open("config/config.json", "r") as f:
     config = json.load(f)
 
-# Parameters
+# Load the needed configs
 data_volume = config["data_volume"]
 model_volume = config["model_volume"]
 input_shape = tuple(config['input_shape'])
@@ -73,7 +75,7 @@ def create_loss_plot(history):
     plt.figure()
     plt.plot(history.history['loss'], label='loss')
     plt.plot(history.history['val_loss'], label='val_loss')
-    plt.title('Loss vs Epoches')
+    plt.title('Loss vs Epochs')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
@@ -86,6 +88,7 @@ def create_loss_plot(history):
 
 @app.route("/list_data", methods=["GET"])
 def list_data():
+    """Return all saved datasets in data folder"""
     try: 
         datasets = []
         for file in os.listdir(data_volume):
@@ -93,25 +96,26 @@ def list_data():
                 datasets.append(file)
         return jsonify({"datasets": datasets}), 200
     except Exception as e:
-        return jsonify({"Error": str(e)}), 402
+        return jsonify({"Error": str(e)}), 400
 
 
 @app.route("/train", methods=["POST"])
 def train():
+    """Load the data, train the model and save in models folder"""
     try:
         data = request.json
 
         # Check if required fields are present
         if not data or "data_folder" not in data or "model_name" not in data:
-            return jsonify({"Missing data": "Request fields missing"}), 401
+            return jsonify({"Missing data": "Request fields missing"}), 400
         else:
             data_folder = data.get("data_folder")
             model_name = data.get("model_name")
         
-        # Check if data folder exists
+        # Check if dataset folder exists
         data_path = os.path.join(data_volume, data_folder)
         if not os.path.exists(data_path):
-            return jsonify({"Mising data": "Data folder not found"}), 401
+            return jsonify({"Mising data": "Data folder not found"}), 400
 
         # Load data and create CNN model
         x_train, x_test, y_train, y_test = load_data(data_path)
@@ -126,29 +130,29 @@ def train():
                 validation_data=(x_test, y_test)
             )
         except Exception as e:
-            return jsonify({"Failed to train model": str(e)}), 402
+            return jsonify({"Failed to train model": str(e)}), 400
         
-        # Get model metrics
+        # Get model accuracy and loss
         try:
             acc = f"{history.history['val_accuracy'][-1] * 100:.2f}"
-            img = create_loss_plot(history)
+            loss_img = create_loss_plot(history)
         except Exception as e:
-            return jsonify({"Failed to evaluate model": str(e)}), 402
+            return jsonify({"Failed to evaluate model": str(e)}), 400
         
         # Save model
         try:
             model.save(f"{model_volume}/{model_name}.keras")
         except Exception as e:
-            return jsonify({"Failed to save model": str(e)}), 402
+            return jsonify({"Failed to save model": str(e)}), 400
 
         # Success message
         message = {
             "accuracy": acc,
-            "loss": img
+            "loss": loss_img
         }
         return jsonify(message), 200
     except Exception as e:
-        return jsonify({"Error": str(e)}), 402
+        return jsonify({"Error": str(e)}), 400
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5002)
