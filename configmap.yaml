@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-map
+data:
+  config.json: |
+    {
+      "data_volume": "volume/data",
+      "model_volume": "volume/models",
+      "input_shape": [28, 28, 1],
+      "split_ratio": 0.2,
+      "batch_size": 128,
+      "epochs": 3,
+      "lr": 0.001,
+      "architecture": [
+        ["conv", [32, 3, 3, "relu"]],
+        ["pool", [2, 2]],
+        ["conv", [64, 3, 3, "relu"]],
+        ["pool", [2, 2]],
+        ["flatten", []],
+        ["dense", [64, "relu"]],
+        ["dense", [10, "softmax"]]
+      ]
+    }
