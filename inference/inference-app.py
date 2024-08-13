@@ -3,7 +3,7 @@ import logging
 import os
 from flask import Flask, request, jsonify
 from keras.models import load_model
-from PIL import Image
+import cv2
 import io
 from flask_cors import CORS
 import json
@@ -36,11 +36,11 @@ def load_trained_model(model_path):
 def preprocess_image(image, size=(28, 28, 1)):
     logging.info("Preprocessing the image")
     # Convert the image to grayscale, resize it, and normalize it
-    image = image.convert("L")
-    image = image.resize((size[0], size[1]))
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # Convert to grayscale
+    image = cv2.resize(image, (size[0], size[1]))  # Resize the image
     image = np.array(image)
     image = image.reshape(1, size[0], size[1], size[2])
-    image = image.astype('float32') / 255.0
+    image = image.astype('float32') / 255.0  # Normalize the image
     logging.info("Image preprocessed successfully")
     return image
 
@@ -49,7 +49,6 @@ def make_prediction(model, image):
     prediction = model.predict(image)
     logging.info("Prediction completed")
     return np.argmax(prediction)
-
 
 @app.route("/list_models", methods=["GET"])
 def list_data():
@@ -62,27 +61,34 @@ def list_data():
     except Exception as e:
         return jsonify({"Error": str(e)}), 402
 
-
 @app.route('/predict', methods=['POST'])
 def predict():
     # Get the image file from the request
     if 'test_image' not in request.files:
         return jsonify({'error': 'No image file provided'}), 400
     image_file = request.files['test_image']
-    print(image_file)
+    
+    try:
+        # Convert the uploaded image to a numpy array and decode it with OpenCV
+        image_bytes = np.frombuffer(image_file.read(), np.uint8)
+        image = cv2.imdecode(image_bytes, cv2.IMREAD_COLOR)
+    except Exception as e:
+        return jsonify({'error': f'Failed to decode image: {str(e)}'}), 400
 
     # Get the model name from the request
     model_name = request.form.get('model_folder')
     if not model_name:
         return jsonify({'error': 'No model name provided'}), 400
 
-    # Open the image file and preprocess it
-    image = Image.open(io.BytesIO(image_file.read()))
-    processed_image = preprocess_image(image)
+    # Preprocess the image
+    processed_image = preprocess_image(image, size=input_shape)
 
-    # Load the model
-    model_path = f"{model_volume}/{model_name}.keras"
-    model = load_trained_model(model_path)
+    try:
+        # Load the model
+        model_path = f"{model_volume}/{model_name}.keras"
+        model = load_trained_model(model_path)
+    except Exception as e:
+        return jsonify({'error': f'Failed to load model: {str(e)}'}), 400
 
     # Make a prediction
     prediction = make_prediction(model, processed_image)
@@ -94,5 +100,3 @@ def predict():
 if __name__ == "__main__":
     logging.info("Starting Flask server")
     app.run(host='0.0.0.0', port=5003)
-
-
