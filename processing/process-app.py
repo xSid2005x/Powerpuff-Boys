@@ -163,7 +163,7 @@ def handle_zip_file(file):
         try:
             # Read and process image file
             img = cv2.imread(image_file, cv2.IMREAD_GRAYSCALE)
-            img = cv2.resize(img, input_shape[:2]) # Resize for consistency
+            img = cv2.resize(img, input_shape[:2])
             img = np.array(img).reshape(input_shape)  # Ensure correct shape
             images.append(img)
             labels.append(get_label_from_filename(image_file))
@@ -179,14 +179,27 @@ def handle_zip_file(file):
     # Normalize the image data to the range [0, 1]
     images = images / 255.0
 
+    # Convert labels to integers if necessary
+    unique_labels = np.unique(labels)
+    label_to_int = {label: i for i, label in enumerate(unique_labels)}
+    labels = np.array([label_to_int[label] for label in labels])
+
     # Split data
     x_train, x_test, y_train, y_test = train_test_split(images, labels, test_size=split_ratio)
     
     return x_train, x_test, y_train, y_test
 
 def get_label_from_filename(filename):
-    """Extract label from filename. Placeholder function."""
-    return 0  # Placeholder logic for labels
+    """Extract label from directory structure or filename."""
+    # Try to extract label from the directory structure
+    directory_label = os.path.basename(os.path.dirname(filename))
+    
+    # If directory name is not empty, use it as the label
+    if directory_label:
+        return directory_label
+    
+    # Otherwise, extract label from the filename
+    return os.path.basename(filename).split('_')[0]
 
 def validate_data(x_train, x_test, y_train, y_test):
     """Validate that all required data arrays are present."""
