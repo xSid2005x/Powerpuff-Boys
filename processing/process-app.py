@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
 import zipfile
 import cv2
+import shutil
 
 # Load configurations from JSON file
 with open("config/config.json", "r") as f:
@@ -45,6 +46,9 @@ def upload_file():
     except Exception as e:
         logging.error(f"Error processing data: {e}")
         return jsonify({"Error": str(e)}), 500
+    finally:
+        # Ensure temporary directory is cleaned up
+        cleanup_tmp_directory()
 
     return jsonify(message), 200
 
@@ -176,6 +180,11 @@ def reshape_data(data):
     if data.shape[1:] != input_shape:
         data = data.reshape(-1, *input_shape)
     return data
+
+def cleanup_tmp_directory():
+    """Remove the temporary directory and its contents."""
+    if os.path.exists("tmp"):
+        shutil.rmtree("tmp")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
