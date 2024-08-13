@@ -13,12 +13,44 @@ data:
       "epochs": 3,
       "lr": 0.001,
       "architecture": [
-        ["conv", [32, 3, 3, "relu"]],
-        ["pool", [2, 2]],
-        ["conv", [64, 3, 3, "relu"]],
-        ["pool", [2, 2]],
-        ["flatten", []],
-        ["dense", [64, "relu"]],
-        ["dense", [10, "softmax"]]
+        {
+          "type": "conv",
+          "filters": 32,
+          "size": [3, 3],
+          "strides": [1, 1],
+          "padding": "valid",
+          "activation": "relu"
+        },
+        {
+          "type": "max_pool",
+          "size": [2, 2],
+          "strides": None
+        },
+        {
+          "type": "conv",
+          "filters": 64,
+          "size": [3, 3],
+          "strides": [1, 1],
+          "padding": "valid",
+          "activation": "relu"
+        },
+        {
+          "type": "max_pool",
+          "size": [2, 2],
+          "strides": None
+        },
+        {
+          "type": "flatten"
+        },
+        {
+          "type": "dense",
+          "units": 64,
+          "activation": "relu"
+        },
+        {
+          "type": "dense",
+          "units": 10,
+          "activation": "softmax"
+        }
       ]
     }
