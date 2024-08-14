@@ -9,7 +9,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
 }
 
@@ -64,6 +64,8 @@ body {
     display: flex;
     justify-content: space-around;
     margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #333;
 }
 
 .services div {
@@ -75,17 +77,23 @@ body {
     border-radius: 6px;
     margin: 0 8px;
     transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth scaling and shadow transition */
-    color: #e0e0e0;
+    color: #f0f0f0;
     font-weight: bold;
 }
 
 .services div.active {
     background-color: #0077cc; /* Light blue active state */
-    color: #fff; /* White text for contrast */
+    color: #f0f0f0; /* White text for contrast */
+}
+
+.services div.active:hover {
+    background-color: #005fa3; /* Slightly darker blue for hover effect */
+    transform: scale(1.05); /* Scale up by 5% */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); /* Add a shadow to create the pop-out effect */
 }
 
 .services div:hover {
-    background-color: #005fa3; /* Slightly darker blue for hover effect */
+    background-color: #333; /* Slightly darker blue for hover effect */
     transform: scale(1.05); /* Scale up by 5% */
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); /* Add a shadow to create the pop-out effect */
 }
@@ -116,10 +124,23 @@ body {
     flex-direction: column;
 }
 
+.form-group .custom-file-upload,
+.form-group .file-name,
+.form-group #dataset_name,
+.form-group #model_name,
+.form-group select,
+.form-group button {
+    height: 40px;
+    font-size: 14px; /* Adjust font size */
+    font-family: 'Arial', sans-serif; /* Ensures font consistency */
+}
+
+
 .form-group label {
     margin-bottom: 10px;
     text-align: center;
     color: #f0f0f0; /* White for better contrast */
+    font-weight: bold;
 }
 
 /* Style the custom file input button */
@@ -128,9 +149,8 @@ body {
     padding: 12px 20px;
     cursor: pointer;
     background-color: #003466; /* Light blue for the button */
-    color: #fff;
+    color: #f0f0f0;
     border-radius: 6px;
-    font-weight: bold;
     transition: background-color 0.3s ease;
     width: 100%;
     text-align: center;
@@ -139,7 +159,7 @@ body {
 
 /* Hover effect for the custom file input button */
 .custom-file-upload:hover {
-    background-color: #0077cc; /* Slightly darker blue for hover effect */
+    background-color: #01274a; /* Slightly darker blue for hover effect */
 }
 
 /* Style for the file name display */
@@ -167,14 +187,12 @@ body {
     -webkit-appearance: none; /* For Safari */
     -moz-appearance: none; /* For Firefox */
     background-color: #333; /* Dark background */
-    color: #fff; /* White text */
+    color: #f0f0f0; /* White text */
     padding: 12px;
     border: none;
     border-radius: 6px;
     width: 100%;
     box-sizing: border-box;
-    font-size: 16px; /* Adjust font size */
-    font-family: 'Arial', sans-serif; /* Ensures font consistency */
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
@@ -193,7 +211,9 @@ body {
 }
 
 /* Hover effect */
-.form-group select:hover {
+.form-group select:hover,
+.form-group #dataset_name:hover,
+.form-group #model_name:hover {
     background-color: #555; /* Slightly lighter gray on hover */
 }
 
@@ -206,7 +226,7 @@ body {
 /* Option styles */
 .form-group select option {
     background-color: #333; /* Dark background */
-    color: #fff; /* White text */
+    color: #f0f0f0; /* White text */
 }
 
 /* Optional: style the entire form-group */
@@ -231,7 +251,7 @@ body {
 .form-group button {
     background-color: #0077cc; /* Changed to a slightly darker blue */
     border: none;
-    color: #fff;
+    color: #f0f0f0;
     font-weight: 700;
     transition: background-color 0.3s ease;
 }
@@ -253,8 +273,13 @@ body {
 .service-output {
     margin-top: 20px;
     display: none;
-    color: #00aaff; /* Light blue for the output text */
+    color: #f0f0f0; /* Light blue for the output text */
     font-weight: bold;
+    border-top: 1px solid #333;
+}
+
+.service-output h3{
+    color: #00aaff
 }
 
 .service-output img {
@@ -269,28 +294,31 @@ body {
 }
 
 #clearCanvas {
-    background-color: #555; /* Dark gray for clear canvas button */
-    color: #fff; /* White text */
-    padding: 10px;
+    background-color: #555;
+    color: #fff;
+    padding: 15px 15px;
+    font-size: 12px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    width: 280px; /* Match the canvas width */
-    margin-top: 10px;
+    margin: 10px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #uploadDrawing {
-    background-color: #0077cc; /* Light blue for upload drawing button */
-    color: #fff; /* White text */
-    padding: 12px;
+    background-color: #555;
+    color: #fff;
+    padding: 15px 15px;
+    font-size: 12px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    font-weight: 700; /* Bolder text */
     transition: background-color 0.3s ease;
-    width: 100%; /* Match the submit button width */
-    margin-top: 10px;
+    margin: 10px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #uploadDrawing:hover,
@@ -308,4 +336,84 @@ body {
 .form-group label[for="drawingCanvas"] {
     font-weight: bold;
     color: #f0f0f0; /* White for better contrast */
+}
+
+
+/* Tabs Styling */
+.tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    background-color: #444; /* Dark gray for the tab */
+    border-radius: 6px;
+    margin: 0 8px;
+    transition: background-color 0.3s ease;
+    color: #e0e0e0;
+    font-weight: bold;
+}
+
+.tab.active {
+    background-color: #0077cc; /* Light blue active state */
+    color: #fff; /* White text for contrast */
+}
+
+.tab:hover {
+    background-color: #005fa3; /* Slightly darker blue for hover effect */
+}
+
+.tab-content {
+    display: none; /* Initially hide all tab contents */
+}
+
+.image-preview-container {
+    width: 280px; /* Match the canvas width */
+    height: 280px; /* Match the canvas height */
+    border: 1px solid #00aaff; /* Light blue border to match the canvas */
+    background-color: #222; /* Dark background for the placeholder */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.image-preview-container img {
+    max-width: 100%;
+    max-height: 100%;
+    display: none; /* Hidden until an image is uploaded */
+}
+
+/* Adjust the button group to ensure side-by-side placement */
+.button-group {
+    display: flex;
+    margin-top: 10px;
+    align-items: center;
+    flex-direction: row;
+    width: 320px;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.button-group button {
+    width: 135px; /* Half the width of the canvas minus margin */
+    background-color: #0077cc; /* Light blue for buttons */
+    color: #fff;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: background-color 0.3s ease;
+    box-sizing: border-box; /* Ensures padding and borders are included in width */
+}
+
+.button-group button:hover {
+    background-color: #005fa3; /* Darker blue on hover */
 }
