@@ -32,7 +32,7 @@
 
         <!-- Div that contains data processing components -->
         <div class="service-content" id="data-processing" style="display:block;">
-            <form id="uploadDataset" action="http://localhost:5001/upload" method="POST" enctype="multipart/form-data">
+            <form id="uploadDataset" action="http://power-puff.boys/process/upload" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="dataset_file">Upload Dataset:</label>
                     <label for="dataset_file" class="custom-file-upload">
@@ -66,7 +66,7 @@
 
         <!-- Div that contains training components -->
         <div class="service-content" id="training">
-            <form id="trainModel" action="http://localhost:5002/train" method="POST">
+            <form id="trainModel" action="http://power-puff.boys/train/train" method="POST">
                 <div class="form-group">
                     <label for="data_folder">Select Dataset:</label>
                     <select id="data_folder" name="data_folder" required>
@@ -95,7 +95,7 @@
 
         <!-- Div that contains inference components -->
         <div class="service-content" id="inference">
-            <form id="makeInference" action="http://localhost:5003/predict" method="POST" enctype="multipart/form-data">
+            <form id="makeInference" action="http://power-puff.boys/inference/predict" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="model_folder">Select Model:</label>
                     <select id="model_folder" name="model_folder" required>

@@ -7,7 +7,7 @@ function listData() {
     option.selected = true;
     option.textContent = 'Select Dataset';
     dataSelect.appendChild(option);
-    fetch('http://localhost:5002/list_data')
+    fetch('http://power-puff.boys/train/list_data')
         .then(response => response.json())
         .then(data => {
             data.datasets.forEach(dataset => {
@@ -58,7 +58,7 @@ function listModel() {
     option.selected = true;
     option.textContent = 'Select Model';
     modelSelect.appendChild(option);
-    fetch('http://localhost:5003/list_models')
+    fetch('http://power-puff.boys/inference/list_models')
         .then(response => response.json())
         .then(data => {
             data.models.forEach(model => {
