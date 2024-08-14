@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project demonstrates the deployment of an AI-based image processing system using Flask, Docker, and Kubernetes. The system is designed to handle data processing, model training, and inference tasks, all orchestrated using Kubernetes and accessible via a web frontend. Each component is containerized using Docker to ensure consistency and scalability.
+This project demonstrates the deployment of an AI-based Handwritten Digits Recognition system using Flask, Docker, and Kubernetes. The system is designed to handle data processing, model training, and inference tasks, all orchestrated using Kubernetes and accessible via a web frontend. Each component is containerized using Docker to ensure consistency and scalability.
 
 ## Table of Contents
 
