@@ -126,13 +126,14 @@ body {
 
 .form-group .custom-file-upload,
 .form-group .file-name,
-.form-group #dataset_name,
-.form-group #model_name,
+.form-group input[type="text"],
 .form-group select,
 .form-group button {
+    color: #f0f0f0;
     height: 40px;
     font-size: 14px; /* Adjust font size */
     font-family: 'Arial', sans-serif; /* Ensures font consistency */
+    padding: 12px;
 }
 
 
@@ -148,7 +149,7 @@ body {
     display: inline-block;
     padding: 12px 20px;
     cursor: pointer;
-    background-color: #003466; /* Light blue for the button */
+    background-color: #003466;
     color: #f0f0f0;
     border-radius: 6px;
     transition: background-color 0.3s ease;
@@ -165,13 +166,10 @@ body {
 /* Style for the file name display */
 .file-name {
     margin-top: 10px;
-    font-size: 14px;
-    color: #f0f0f0;
     text-align: left;
     width: 100%;
     box-sizing: border-box;
     background-color: #333; /* Dark gray background */
-    padding: 10px;
     border-radius: 6px;
 }
 
@@ -188,7 +186,6 @@ body {
     -moz-appearance: none; /* For Firefox */
     background-color: #333; /* Dark background */
     color: #f0f0f0; /* White text */
-    padding: 12px;
     border: none;
     border-radius: 6px;
     width: 100%;
@@ -213,7 +210,8 @@ body {
 /* Hover effect */
 .form-group select:hover,
 .form-group #dataset_name:hover,
-.form-group #model_name:hover {
+.form-group #model_name:hover,
+.tab:hover {
     background-color: #555; /* Slightly lighter gray on hover */
 }
 
@@ -298,36 +296,39 @@ body {
 }
 
 #clearCanvas {
-    background-color: #555;
+    background-color: #333;
     color: #fff;
-    padding: 15px 15px;
-    font-size: 12px;
+    padding: 12px;
+    font-size: 14px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin: 10px 5px 10px 0;
+    margin: 10px 4px 10px 0;
     width: 100%;
     box-sizing: border-box;
 }
 
 #uploadDrawing {
-    background-color: #555;
+    background-color: #003466;
     color: #fff;
-    padding: 15px 15px;
-    font-size: 12px;
+    padding: 12px 0px;
+    font-size: 14px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin: 10px 0 10px 5px;
+    margin: 10px 0 10px 4px;
     width: 100%;
     box-sizing: border-box;
 }
 
-#uploadDrawing:hover,
+#uploadDrawing:hover {
+    background-color: #01274a; /* Slightly darker blue for hover */
+}
+
 #clearCanvas:hover {
-    background-color: #005fa3; /* Slightly darker blue for hover */
+    background-color: #555;
 }
 
 /* Make the specified labels bolder */
@@ -353,23 +354,26 @@ body {
 .tab {
     flex: 1;
     text-align: center;
-    padding: 10px;
+    padding: 12px;
     cursor: pointer;
-    background-color: #444; /* Dark gray for the tab */
+    background-color: #333; /* Dark gray for the tab */
     border-radius: 6px;
     margin: 0 8px;
     transition: background-color 0.3s ease;
     color: #e0e0e0;
     font-weight: bold;
+    font-size: 14px; /* Adjust font size */
+    font-family: 'Arial', sans-serif; /* Ensures font consistency */
+    height: 16px;
 }
 
 .tab.active {
-    background-color: #0077cc; /* Light blue active state */
+    background-color: #003466; /* Light blue active state */
     color: #fff; /* White text for contrast */
 }
 
-.tab:hover {
-    background-color: #005fa3; /* Slightly darker blue for hover effect */
+.tab.active:hover {
+    background-color: #01274a; /* Slightly darker blue for hover effect */
 }
 
 .tab-content {
@@ -393,7 +397,7 @@ body {
 }
 
 .custom-inference-upload:hover {
-    background-color: #0077cc; /* Slightly darker blue for hover effect */
+    background-color: #01274a; /* Slightly darker blue for hover effect */
 }
 
 .custom-inference-file-name {
