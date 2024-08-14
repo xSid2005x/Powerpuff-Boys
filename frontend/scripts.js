@@ -7,7 +7,7 @@ function listData() {
     option.selected = true;
     option.textContent = 'Select Dataset';
     dataSelect.appendChild(option);
-    fetch('http://power-puff.boys/train/list_data')
+    fetch('http://localhost:5002/list_data')
         .then(response => response.json())
         .then(data => {
             data.datasets.forEach(dataset => {
@@ -58,7 +58,7 @@ function listModel() {
     option.selected = true;
     option.textContent = 'Select Model';
     modelSelect.appendChild(option);
-    fetch('http://power-puff.boys/inference/list_models')
+    fetch('http://localhost:5003/list_models')
         .then(response => response.json())
         .then(data => {
             data.models.forEach(model => {
@@ -197,10 +197,53 @@ document.getElementById('makeInference').addEventListener('submit', function(eve
     });
 });
 
+// Tab switching logic
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        // Remove active class from all tabs
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.style.display = 'none';
+        });
+
+        // Add active class to the clicked tab
+        tab.classList.add('active');
+
+        // Show the corresponding tab content
+        const tabType = tab.getAttribute('tab-type');
+        document.getElementById(tabType).style.display = 'block';
+
+        // Clear the opposite tab's input and output
+        if (tabType === 'upload-tab') {
+            clearCanvas(); // Clear the drawing canvas
+            document.getElementById('fileNameImage').textContent = 'No file chosen';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('test_image').value = ''; // Clear the file input
+        } else if (tabType === 'draw-tab') {
+            clearCanvas(); // Clear the drawing canvas
+            document.getElementById('fileNameImage').textContent = 'No file chosen';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('test_image').value = ''; // Clear the file input
+        }
+    });
+});
+
 // Update file name display when a file is chosen in the Inference section
 document.getElementById('test_image').addEventListener('change', function() {
     const fileName = this.files[0] ? this.files[0].name : 'No file chosen';
-    document.getElementById('fileName').textContent = fileName;
+    document.getElementById('fileNameImage').textContent = fileName;
+
+    // Display the image preview
+    const file = this.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const imagePreview = document.getElementById('imagePreview');
+        imagePreview.src = e.target.result;
+        imagePreview.style.display = 'block';
+    }
+    reader.readAsDataURL(file);
 });
 
 // Function to update file name display when a file is chosen
@@ -231,25 +274,31 @@ document.getElementById('uploadDrawing').addEventListener('click', uploadDrawing
 
 function startDrawing(event) {
     drawing = true;
-    draw(event); // Draw a point where the mouse is initially pressed down
+    ctx.beginPath(); // Start a new path
+    draw(event); // Draw the initial point where the mouse is pressed down
 }
 
 function stopDrawing() {
     drawing = false;
-    ctx.beginPath(); // Begin a new path, so it doesn't connect with the previous lines
+    ctx.beginPath(); // Reset the path so it doesn't connect with the previous drawing
 }
 
 function draw(event) {
     if (!drawing) return;
 
+    // Get the mouse position relative to the canvas
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
     ctx.lineWidth = 10;
     ctx.lineCap = 'round';
     ctx.strokeStyle = 'white';
 
-    ctx.lineTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
+    ctx.lineTo(x, y);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
+    ctx.moveTo(x, y);
 }
 
 function clearCanvas() {
@@ -268,5 +317,6 @@ function uploadDrawing() {
         alert('Drawing uploaded as image!');
     });
 }
+
 
 
