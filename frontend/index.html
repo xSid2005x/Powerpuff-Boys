@@ -101,13 +101,17 @@
                     <select id="model_folder" name="model_folder" required>
                     </select>
                 </div>
+
+                <div id="selectimglabel" class="form-group">
+                    <label for="image_tabs">Select Image:</label>
+                </div>
         
                 <!-- Inference tabs for Upload Image and Drawing -->
                 <div class="tabs">
-                    <div class="tab active" tab-type="upload-tab">
+                    <div id="uploadtab" class="tab active" tab-type="upload-tab">
                         <i class="fas fa-upload"></i> Upload Image
                     </div>
-                    <div class="tab" tab-type="draw-tab">
+                    <div id="drawtab" class="tab" tab-type="draw-tab">
                         <i class="fas fa-pencil-alt"></i> Draw Image
                     </div>
                 </div>
@@ -115,23 +119,21 @@
                 <!-- Upload Image Tab Content -->
                 <div class="tab-content" id="upload-tab" style="display: block;">
                     <div class="form-group">
-                        <label for="test_image">Upload Image:</label>
-                        <label for="test_image" class="custom-file-upload">
+                        <label for="test_image" id="choosebutton" class="custom-file-upload custom-inference-upload">
                             <i class="fas fa-upload"></i> Choose File
                         </label>
                         <input id="test_image" name="test_image" type="file" accept="image/*" required />
-                        <div class="file-name" id="fileNameImage">No file chosen</div> <!-- File name display for Inference -->
                         <div class="image-preview-container">
-                            <img id="imagePreview" src="#" alt="Image Preview" style="display:none; max-width: 100%;">
+                            <img id="imagePreview" src="#" alt="Image Preview" style="display:none;">
                         </div>
+                        <div class="file-name custom-inference-file-name" id="fileNameImage">No file chosen</div> <!-- File name display for Inference -->
                     </div>
                 </div>
         
                 <!-- Draw Image Tab Content -->
                 <div class="tab-content" id="draw-tab">
                     <!-- Canvas for drawing -->
-                    <div class="form-group">
-                        <label for="drawingCanvas">Draw a Number:</label>
+                    <div id="drawingsection" class="form-group">
                         <canvas id="drawingCanvas" width="280" height="280"></canvas>
                     </div>
                 
@@ -155,7 +157,8 @@
             <div class="service-output" id="inferenceOutput">
                 <h3>Prediction:</h3>
                 <div id="predictOutput"></div>
-            </div>
+                <div id="confidenceOutput"></div> <!-- Added to display confidence level -->
+            </div>            
         </div>
     </div>
 
