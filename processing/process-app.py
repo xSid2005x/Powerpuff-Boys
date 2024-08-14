@@ -17,7 +17,7 @@ with open("config/config.json", "r") as f:
 
 data_folder = config["data_volume"]  # Directory to save processed data
 split_ratio = config["split_ratio"]  # Ratio to split data into train and test sets
-input_shape = tuple(config['input_shape'])  # Desired shape of input data
+input_shape = tuple(config['input_shape'])  # Desired shape of input data (should be (28, 28, 1) for grayscale)
 
 # Setup logging to track processing
 logging.basicConfig(level=logging.INFO)
@@ -56,17 +56,18 @@ def process_data(file, dataset_name):
     # Determine the file extension to decide processing method
     file_ext = os.path.splitext(file.filename)[1]
 
-    if file_ext == '.npz':
-        x_train, x_test, y_train, y_test = handle_npz_file(file)
-    elif file_ext == '.npy':
-        x_train, x_test, y_train, y_test = handle_npy_file(file)
+    if file_ext == '.npz' or file_ext == '.npy':
+        x_train, x_test, y_train, y_test = handle_np_file(file, file_ext)
     elif file_ext == '.zip':
         x_train, x_test, y_train, y_test = handle_zip_file(file)
     else:
         raise ValueError("Unsupported file format")
 
+    # Find the maximum pixel value in the training and testing data
+    max_pixel_value = max(np.max(x_train), np.max(x_test))
+
     # Normalize image data to the range [0, 1]
-    x_train, x_test = x_train / 255.0, x_test / 255.0
+    x_train, x_test = x_train / max_pixel_value, x_test / max_pixel_value
 
     # One-hot encode labels for classification tasks
     y_train = to_categorical(y_train)
@@ -93,54 +94,38 @@ def process_data(file, dataset_name):
         'y_test': y_test.shape,
     }
 
-def handle_npz_file(file):
-    """Process .npz file and return train and test datasets."""
+def handle_np_file(file, file_ext):
+    """Process .npz or .npy file and return train and test datasets."""
     file_stream = io.BytesIO(file.read())
-    data = np.load(file_stream)
-
-    # Check if train/test splits exist
-    if "x_train" in data and "x_test" in data and "y_train" in data and "y_test" in data:
-        x_train = data.get("x_train")
-        x_test = data.get("x_test")
-        y_train = data.get("y_train")
-        y_test = data.get("y_test")
-    else:
-        # If not, split the data
-        x = data.get('x')
-        y = data.get('y')
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=split_ratio)
-
-    validate_data(x_train, x_test, y_train, y_test)
-
-    # Reshape data if necessary to match the input shape
-    x_train = reshape_data(x_train)
-    x_test = reshape_data(x_test)
+    
+    # Check if it's a .npz or .npy file
+    if file_ext == '.npz':
+        data = np.load(file_stream)
+    elif file_ext == '.npy':
+        data = np.load(file_stream, allow_pickle=True).item()
+    
+    x_train, x_test, y_train, y_test = check_and_split_data(data)
+    x_train, x_test = reshape_data(x_train), reshape_data(x_test)
 
     return x_train, x_test, y_train, y_test
 
-def handle_npy_file(file):
-    """Process .npy file containing a dictionary and return train and test datasets."""
-    file_stream = io.BytesIO(file.read())
-    data = np.load(file_stream, allow_pickle=True).item()
-
-    # Check if train/test splits exist
-    if 'x_train' in data and 'x_test' in data and 'y_train' in data and 'y_test' in data:
-        x_train = data.get('x_train')
-        x_test = data.get('x_test')
-        y_train = data.get('y_train')
-        y_test = data.get('y_test')
+def check_and_split_data(data):
+    """Check for existing splits or perform a split if necessary."""
+    # For .npz files, data is a dictionary-like object, use dictionary indexing
+    if isinstance(data, dict) or isinstance(data, np.lib.npyio.NpzFile):
+        if "x_train" in data and "x_test" in data and "y_train" in data and "y_test" in data:
+            x_train = data["x_train"]
+            x_test = data["x_test"]
+            y_train = data["y_train"]
+            y_test = data["y_test"]
+        else:
+            x = data["x"]
+            y = data["y"]
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=split_ratio)
     else:
-        # If not, split the data
-        x = data.get('x')
-        y = data.get('y')
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=split_ratio)
+        raise ValueError("Unexpected data format. Expected dictionary-like object for .npz files.")
 
     validate_data(x_train, x_test, y_train, y_test)
-
-    # Reshape data if necessary to match the input shape
-    x_train = reshape_data(x_train)
-    x_test = reshape_data(x_test)
-
     return x_train, x_test, y_train, y_test
 
 def handle_zip_file(file):
@@ -163,8 +148,11 @@ def handle_zip_file(file):
         try:
             # Read and process image file
             img = cv2.imread(image_file, cv2.IMREAD_GRAYSCALE)
-            img = cv2.resize(img, input_shape[:2]) # Resized for consistency
-            img = np.array(img).reshape(input_shape)  # Ensure correct shape
+            img = cv2.resize(img, input_shape[:2])  # Resize to (28, 28)
+
+            # Ensure correct shape: (28, 28, 1)
+            img = img[:, :, np.newaxis]  # Add the channel dimension to make it (28, 28, 1)
+            
             images.append(img)
             labels.append(get_label_from_filename(image_file))
         except Exception as e:
@@ -205,10 +193,23 @@ def validate_data(x_train, x_test, y_train, y_test):
         raise ValueError("Missing keys in data file")
 
 def reshape_data(data):
-    """Reshape data to match the input shape."""
-    if data.shape[1:] != input_shape:
-        data = data.reshape(-1, *input_shape)
-    return data
+    """Resize and reshape data to match the input shape."""
+    resized_data = []
+    for img in data:
+        # Ensure the image data is in uint8 format for OpenCV compatibility
+        if img.dtype != np.uint8:
+            img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+
+        # Resize each image to match the first two dimensions of input_shape
+        resized_img = cv2.resize(img, input_shape[:2])
+
+        # Ensure the resized image matches the input shape (28, 28, 1)
+        if len(resized_img.shape) == 2:  # if it's grayscale, add the channel dimension
+            resized_img = resized_img[:, :, np.newaxis]
+
+        resized_data.append(resized_img)
+
+    return np.array(resized_data)
 
 def cleanup_tmp_directory():
     """Remove the temporary directory and its contents."""
@@ -217,4 +218,3 @@ def cleanup_tmp_directory():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
-
