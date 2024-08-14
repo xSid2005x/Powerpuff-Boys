@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: train-container
-        image: kefkjb/train:3.0
+        image: kefkjb/train:4.0
         ports:
         - containerPort: 5002
         volumeMounts:
