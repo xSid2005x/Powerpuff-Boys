@@ -187,7 +187,8 @@ document.getElementById('makeInference').addEventListener('submit', function(eve
     .then(response => response.json())
     .then(data => {
         document.getElementById('inferLoading').style.display = 'none';
-        document.getElementById('predictOutput').textContent = `Predicted Digit: ${data.prediction}`;
+        document.getElementById('predictOutput').textContent = `classification: ${data.prediction}`;
+        document.getElementById('confidenceOutput').textContent = `Confidence Level: ${(data.confidence * 100).toFixed(2)}%`; // Display confidence level
         document.getElementById('inferenceOutput').style.display = 'block';
     })
     .catch(error => {
