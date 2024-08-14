@@ -175,9 +175,6 @@ def handle_zip_file(file):
 
     images = np.array(images)
     labels = np.array(labels)
-
-    # Normalize the image data to the range [0, 1]
-    images = images / 255.0
     
     # Convert labels to integers if necessary
     if not np.issubdtype(labels.dtype, np.integer):
