@@ -13,6 +13,7 @@ import os
 import sys
 import base64
 import json
+import logging
 
 # Fix encoding problem
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
@@ -31,6 +32,7 @@ epochs = config['epochs']
 lr = config['lr']
 architecture = config['architecture']
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 app = Flask(__name__)
 CORS(app)
 
@@ -104,6 +106,7 @@ def create_loss_plot(history):
 @app.route("/list_data", methods=["GET"])
 def list_data():
     """Return all saved datasets in data folder"""
+    logging.info("Received get request...")
     try: 
         datasets = []
         for file in os.listdir(data_volume):
@@ -117,11 +120,13 @@ def list_data():
 @app.route("/train", methods=["POST"])
 def train():
     """Load the data, train the model and save in models folder"""
+    logging.info("Received post request...")
     try:
         data = request.json
 
         # Check if required fields are present
         if not data or "data_folder" not in data or "model_name" not in data:
+            logging.info("Request missing fields")
             return jsonify({"Missing data": "Request fields missing"}), 400
         else:
             data_folder = data.get("data_folder")
@@ -130,11 +135,15 @@ def train():
         # Check if dataset folder exists
         data_path = os.path.join(data_volume, data_folder)
         if not os.path.exists(data_path):
+            logging.info("Data folder not found")
             return jsonify({"Mising data": "Data folder not found"}), 400
 
         # Load data and create CNN model
         x_train, x_test, y_train, y_test = load_data(data_path)
+        logging.info("Data loaded succesfully")
         model = CNN_model(input_shape, lr)
+        logging.info("Model built succesfully")
+        model.summary()
 
         # Train model
         try:
@@ -144,20 +153,26 @@ def train():
                 batch_size=batch_size, 
                 validation_data=(x_test, y_test)
             )
+            logging.info("Model trained succesfully")
         except Exception as e:
+            logging.info("Failed to train model:", str(e))
             return jsonify({"Failed to train model": str(e)}), 400
         
         # Get model accuracy and loss
         try:
             acc = f"{history.history['val_accuracy'][-1] * 100:.2f}"
             loss_img = create_loss_plot(history)
+            logging.info("Obtained metrics succesfully")
         except Exception as e:
+            logging.info("Failed to evaluate model:", str(e))
             return jsonify({"Failed to evaluate model": str(e)}), 400
         
         # Save model
         try:
             model.save(f"{model_volume}/{model_name}.keras")
+            logging.info("Saved model succesfully")
         except Exception as e:
+            logging.info("Failed to save model:", str(e))
             return jsonify({"Failed to save model": str(e)}), 400
 
         # Success message
@@ -167,6 +182,7 @@ def train():
         }
         return jsonify(message), 200
     except Exception as e:
+        logging.info("Error:", str(e))
         return jsonify({"Error": str(e)}), 400
 
 if __name__ == "__main__":
