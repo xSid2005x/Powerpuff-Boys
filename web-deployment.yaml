@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: web-container
-        image: kefkjb/web-app:latest
+        image: jomariemiguel/web-app:latest
         ports:
         - containerPort: 80
 ---
