@@ -24,7 +24,7 @@ data:
         {
           "type": "max_pool",
           "size": [2, 2],
-          "strides": None
+          "strides": null
         },
         {
           "type": "conv",
@@ -37,7 +37,7 @@ data:
         {
           "type": "max_pool",
           "size": [2, 2],
-          "strides": None
+          "strides": null
         },
         {
           "type": "flatten"
