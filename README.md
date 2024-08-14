@@ -14,15 +14,12 @@ This project demonstrates the deployment of an AI-based Handwritten Digits Recog
 4. [Building Docker Images](#building-docker-images)
 5. [Kubernetes Deployment](#kubernetes-deployment)
    - [Deployment Instructions](#deployment-instructions)
-   - [Ingress Configuration](#ingress-configuration)
-6. [Accessing the Application](#accessing-the-application)
-7. [Detailed Service Descriptions](#detailed-service-descriptions)
+6. [Detailed Service Descriptions](#detailed-service-descriptions)
    - [Web Frontend](#web-frontend)
    - [Training](#training)
    - [Processing](#processing)
    - [Inference](#inference)
-8. [Troubleshooting](#troubleshooting)
-9. [Future Enhancements](#future-enhancements)
+7. [Troubleshooting](#troubleshooting)
 
 ## System Architecture
 
@@ -206,38 +203,6 @@ To deploy the project using Kubernetes, follow these steps:
    ```plaintext
    http://power-puff.boys/
    ```
-
-### Ingress Configuration
-
-Ingress is configured to manage external access to the services, providing a unified entry point. The Ingress settings are defined in `ingress.yaml`.
-
-To apply the Ingress configuration:
-
-```bash
-kubectl apply -f kubernetes/ingress.yaml
-```
-
-## Accessing the Application
-
-Once all the services are deployed, follow these steps to access the web application:
-
-1. **Start Minikube and enable Ingress:**
-
-   ```bash
-   minikube start
-   minikube addons enable ingress
-   ```
-
-2. **Apply all Kubernetes configurations:**
-
-   ```bash
-   kubectl apply -f kubernetes/
-   ```
-
-3. **Access the web application:**
-
-   - Add `127.0.0.1 power-puff.boys` to your `/etc/hosts` file.
-   - Open `http://power-puff.boys/` in your web browser.
 
 ## Detailed Service Descriptions
 
