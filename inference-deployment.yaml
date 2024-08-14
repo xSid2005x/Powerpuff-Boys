@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: inference-container
-        image: kefkjb/infer:1.0
+        image: siddharthraj/infer:latest
         ports:
         - containerPort: 5003
         volumeMounts:
