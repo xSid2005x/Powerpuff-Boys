@@ -14,12 +14,7 @@ This project demonstrates the deployment of an AI-based Handwritten Digits Recog
    - [Volumes](#volumes)
    - [Deployments](#deployments)
    - [Customizing Service Images](#customizing-service-images)
-6. [Detailed Service Descriptions](#detailed-service-descriptions)
-   - [Web Frontend](#web-frontend)
-   - [Training](#training)
-   - [Processing](#processing)
-   - [Inference](#inference)
-7. [Troubleshooting](#troubleshooting)
+6. [Troubleshooting](#troubleshooting)
 
 ## Folder Structure
 
@@ -77,8 +72,8 @@ At the core of the system, several specialized components are designed to manage
    - **Model-Volume:** This volume stores the trained models. The training service writes models to this volume, while the inference service reads from it to perform predictions.
 
 3. **Train-App, Process-App, Inference-App:**
-   - **Train-App:** This application handles the training of machine learning models. It reads data from the Data-Volume, processes it, and stores the trained model in the Model-Volume.
    - **Process-App:** Responsible for preprocessing and preparing the data before it is used for training or inference. It ensures the data is in the correct format and structure required by the models.
+   - **Train-App:** This application handles the training of machine learning models. It reads data from the Data-Volume, trains and evaluates the model, and stores the trained model in the Model-Volume.
    - **Inference-App:** This application uses the trained models stored in the Model-Volume to perform predictions on new data. The results are then sent to the Web-App.
 
 4. **Web-App:**
@@ -220,22 +215,6 @@ To build and push Docker images, follow these steps:
    ```
 
 4. **Repeat the above steps for the `inference`, `processing`, and `training` services.**
-
-## Detailed Service Descriptions
-
-### Web Frontend
-
-- **Functionality:** 
-  - The web frontend allows users to upload datasets, train models, and perform inference.
-  - The UI is built using HTML, CSS, and JavaScript, and it communicates with the backend services via REST API calls.
-
-- **Deployment:** 
-  - The web frontend is deployed using Kubernetes, and it interacts with the backend services via the Ingress controller.
-
-- **Files:**
-  - `index.html`: Main HTML file for the frontend.
-  - `styles.css`: Styling for the frontend.
-  - `scripts.js`: JavaScript logic for interacting with backend services.
 
 ## Troubleshooting
 
