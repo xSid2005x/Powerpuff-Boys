@@ -23,17 +23,40 @@ This project demonstrates the deployment of an AI-based Handwritten Digits Recog
 
 ## System Architecture
 
-The system is composed of several key components that work together to provide a full-fledged AI solution:
+The system is composed of several key components that work together to provide a full-fledged AI solution. Below is an overview of the system architecture:
 
-- **Flask API Services:** These are the core backend services responsible for processing data, training models, and performing inference. Each service is containerized to ensure isolated and consistent environments.
+![image]([https://github.com/user-attachments/assets/a9989b9c-f857-43d2-bd85-e30572b556c2](https://github.com/user-attachments/assets/a9989b9c-f857-43d2-bd85-e30572b556c2))
 
-- **Docker:** Docker is used to package each Flask service into containers, making them portable and easy to deploy across different environments.
 
-- **Kubernetes:** Kubernetes orchestrates the deployment, scaling, and networking of the Docker containers. It ensures that the services are highly available and can scale based on demand.
+### Architecture Overview
 
-- **Ingress:** Ingress is used to manage external access to the services, providing a single entry point to the system.
+At the core of the system, several specialized components are designed to manage different aspects of the AI workflow, from data preprocessing to model inference:
 
-- **Persistent Storage:** Kubernetes Persistent Volumes are used to store datasets and trained models, ensuring data persistence across pod restarts.
+1. **Secret & ConfigMap:**
+   - The **ConfigMap** is a centralized configuration manager that stores all essential settings used by the services, such as paths to data and model volumes, model architecture details, and training parameters. This ensures that all services operate with consistent configuration data, enhancing the system's reliability.
+   - **Secrets** are used to store and manage sensitive information securely, such as API keys or passwords that the applications require.
+
+2. **Data-Volume & Model-Volume:**
+   - **Data-Volume:** This is where the datasets are stored. The processing and training services access this volume to read and write data.
+   - **Model-Volume:** This volume stores the trained models. The training service writes models to this volume, while the inference service reads from it to perform predictions.
+
+3. **Train-App, Process-App, Inference-App:**
+   - **Train-App:** This application handles the training of machine learning models. It reads data from the Data-Volume, processes it, and stores the trained model in the Model-Volume.
+   - **Process-App:** Responsible for preprocessing and preparing the data before it is used for training or inference. It ensures the data is in the correct format and structure required by the models.
+   - **Inference-App:** This application uses the trained models stored in the Model-Volume to perform predictions on new data. The results are then sent to the Web-App.
+
+4. **Web-App:**
+   - The Web-App serves as the user interface, allowing users to interact with the system. Users can upload datasets, initiate model training, and request predictions. The Web-App communicates with the backend services (Train-App, Process-App, Inference-App) via RESTful APIs.
+
+5. **Services (svc):**
+   - Kubernetes Services are used to ensure that each application (Train-App, Process-App, Inference-App, Web-App) is reachable within the cluster. These services manage the internal routing of requests between different components, ensuring that they can communicate efficiently and reliably.
+
+6. **Ingress:**
+   - The Ingress controller manages external access to the services, providing a single point of entry to the system. It routes incoming requests to the appropriate service within the Kubernetes cluster, ensuring that the system is accessible from outside the cluster.
+
+### How It All Comes Together
+
+The data flows from the Data-Volume through the Process-App, where it is preprocessed and prepared for model training. The Train-App then takes this processed data, trains a machine learning model, and stores the resulting model in the Model-Volume. The Inference-App accesses these stored models to perform predictions on new input data, which are then sent back to the user via the Web-App. This modular approach ensures that each component is specialized and can be independently scaled, updated, or redeployed without affecting the overall system.
 
 ## Project Structure
 
