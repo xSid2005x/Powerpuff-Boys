@@ -63,11 +63,12 @@ def process_data(file, dataset_name):
     else:
         raise ValueError("Unsupported file format")
 
-    # Find the maximum pixel value in the training and testing data
-    max_pixel_value = max(np.max(x_train), np.max(x_test))
-
     # Normalize image data to the range [0, 1]
+    max_pixel_value = max(np.max(x_train), np.max(x_test))
     x_train, x_test = x_train / max_pixel_value, x_test / max_pixel_value
+
+    # Reshape data to match input_shape
+    x_train, x_test = reshape_data(x_train), reshape_data(x_test)
 
     # One-hot encode labels for classification tasks
     y_train = to_categorical(y_train)
@@ -105,7 +106,6 @@ def handle_np_file(file, file_ext):
         data = np.load(file_stream, allow_pickle=True).item()
     
     x_train, x_test, y_train, y_test = check_and_split_data(data)
-    x_train, x_test = reshape_data(x_train), reshape_data(x_test)
 
     return x_train, x_test, y_train, y_test
 
@@ -196,10 +196,6 @@ def reshape_data(data):
     """Resize and reshape data to match the input shape."""
     resized_data = []
     for img in data:
-        # Ensure the image data is in uint8 format for OpenCV compatibility
-        if img.dtype != np.uint8:
-            img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-
         # Resize each image to match the first two dimensions of input_shape
         resized_img = cv2.resize(img, input_shape[:2])
 
@@ -209,7 +205,10 @@ def reshape_data(data):
 
         resized_data.append(resized_img)
 
-    return np.array(resized_data)
+    # Convert to numpy array
+    resized_data = np.array(resized_data)
+
+    return resized_data
 
 def cleanup_tmp_directory():
     """Remove the temporary directory and its contents."""
