@@ -6,20 +6,57 @@ This project demonstrates the deployment of an AI-based Handwritten Digits Recog
 
 ## Table of Contents
 
-1. [System Architecture](#system-architecture)
-2. [Project Structure](#project-structure)
-3. [Configurations](#configurations)
+1. [Folder Structure](#folder-structure)
+2. [System Architecture](#system-architecture)
+3. [Deployment Instructions](#deployment-instructions)
+4. [Configurations](#configurations)
    - [ConfigMap](#configmap)
    - [Volumes](#volumes)
-4. [Building Docker Images](#building-docker-images)
-5. [Kubernetes Deployment](#kubernetes-deployment)
-   - [Deployment Instructions](#deployment-instructions)
+   - [Deployments](#deployments)
+   - [Customizing Service Images](#customizing-service-images)
 6. [Detailed Service Descriptions](#detailed-service-descriptions)
    - [Web Frontend](#web-frontend)
    - [Training](#training)
    - [Processing](#processing)
    - [Inference](#inference)
 7. [Troubleshooting](#troubleshooting)
+
+## Folder Structure
+
+```
+/powerpuff-boys
+├── frontend
+│   ├── css
+│   │   └── styles.css
+│   ├── images
+│   │   ├── background.jpg
+│   │   ├── favicon.ico
+│   │   ├── loading-icon.gif
+│   │   └── logo.png
+│   ├── Dockerfile
+│   ├── index.html
+│   └── script.js
+├── inference
+│   ├── Dockerfile
+│   ├── inference-app.py
+│   └── requirements.txt
+├── processing
+│   ├── Dockerfile
+│   ├── process-app.py
+│   └── requirements.txt
+├── training
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── train-app.py
+├── configmap.yaml
+├── inference-deployment.yaml
+├── ingress.yaml
+├── process-deployment.yaml
+├── train-deployment.yaml
+├── volumes.yaml
+├── web-deployment.yaml
+└── README.md
+```
 
 ## System Architecture
 
@@ -57,105 +94,7 @@ At the core of the system, several specialized components are designed to manage
 
 The data flows from the Data-Volume through the Process-App, where it is preprocessed and prepared for model training. The Train-App then takes this processed data, trains a machine learning model, and stores the resulting model in the Model-Volume. The Inference-App accesses these stored models to perform predictions on new input data, which are then sent back to the user via the Web-App. This modular approach ensures that each component is specialized and can be independently scaled, updated, or redeployed without affecting the overall system.
 
-## Project Structure
-
-The project is organized as follows:
-
-```
-/powerpuff-boys
-├── frontend
-│   ├── css
-│   │   └── styles.css
-│   ├── images
-│   │   ├── background.jpg
-│   │   ├── favicon.ico
-│   │   ├── loading-icon.gif
-│   │   └── logo.png
-│   └── static
-│       ├── app.py
-│       ├── Dockerfile
-│       ├── index.html
-│       └── script.js
-├── inference
-│   ├── Dockerfile
-│   ├── inference-app.py
-│   └── requirements.txt
-├── processing
-│   ├── Dockerfile
-│   ├── process-app.py
-│   └── requirements.txt
-├── training
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── train-app.py
-├── configmap.yaml
-├── inference-deployment.yaml
-├── ingress.yaml
-├── process-deployment.yaml
-├── train-deployment.yaml
-├── volumes.yaml
-├── web-deployment.yaml
-└── README.md
-```
-
-- **Frontend:** Contains the web interface for interacting with the system.
-- **Inference, Processing, Training:** Contains the backend services responsible for inference, data processing, and model training.
-- **Config:** Contains the configuration files.
-- **Kubernetes:** Contains Kubernetes configuration files, such as ConfigMaps, Volumes, and Ingress settings.
-
-## Configurations
-
-### ConfigMap
-
-A ConfigMap is used to store the configuration details for all services. This includes paths to data and model volumes, model architecture, training parameters, and other essential settings. The ConfigMap ensures that all services use consistent configuration data.
-
-**Key Fields in `config.json`:**
-
-- **`data_volume:`** Path to the volume where datasets are stored.
-- **`model_volume:`** Path to the volume where models are stored.
-- **`input_shape:`** Input shape of the data (e.g., `[28, 28, 1]` for grayscale images).
-- **`split_ratio:`** Ratio for splitting data into training and testing sets.
-- **`batch_size:`** Batch size used during model training.
-- **`epochs:`** Number of epochs for model training.
-- **`lr:`** Learning rate for the optimizer.
-- **`architecture:`** List defining the layers and architecture of the neural network.
-
-### Volumes
-
-Persistent Volumes are defined in the `volumes.yaml` file. These volumes store datasets and trained models, ensuring data persistence across container restarts. The Persistent Volume Claims (PVCs) request storage from Kubernetes to be mounted into the containers.
-
-**Key Components:**
-
-- **PersistentVolume (PV):** Specifies the physical storage used for datasets and models.
-- **PersistentVolumeClaim (PVC):** Requests storage for use within the containers.
-
-## Building Docker Images
-
-Each service is containerized using Docker. To build and push Docker images, follow these steps:
-
-1. **Navigate to the service directory:**
-
-   ```bash
-   cd frontend
-   ```
-
-2. **Build the Docker image:**
-
-   ```bash
-   docker build -t yourdockerhubusername/frontend:latest .
-   ```
-
-3. **Push the Docker image to Docker Hub:**
-
-   ```bash
-   docker push yourdockerhubusername/frontend:latest
-   ```
-
-4. **Repeat the above steps for the `inference`, `processing`, and `training` services.**
-
-## Kubernetes Deployment
-
-### Deployment Instructions
+## Deployment Instructions
 
 To deploy the project using Kubernetes, follow these steps:
 
@@ -224,6 +163,63 @@ To deploy the project using Kubernetes, follow these steps:
    ```plaintext
    http://power-puff.boys/
    ```
+
+## Configurations
+
+### ConfigMap
+
+The ConfigMap is defined in the `configmap.yaml` file. A ConfigMap is used to store the configuration details and ensure consistent configurations for all services. This map will be mounted inside /app/config/config.json for all services.
+
+**Key Fields in `config.json`:**
+
+- **`data_volume:`** Path to the volume where datasets are stored.
+- **`model_volume:`** Path to the volume where models are stored.
+- **`input_shape:`** Input shape of the data (e.g., `[28, 28, 1]` for grayscale images).
+- **`split_ratio:`** Ratio for splitting data into training and testing sets.
+- **`batch_size:`** Batch size used during model training.
+- **`epochs:`** Number of epochs for model training.
+- **`lr:`** Learning rate for the optimizer.
+- **`architecture:`** List defining the layers and architecture of the neural network.
+
+### Volumes
+
+Persistent Volumes are defined in the `volumes.yaml` file. These volumes store datasets and trained models, ensuring data persistence across container restarts. The Persistent Volume Claims (PVCs) request storage from Kubernetes to be mounted into the containers.
+
+**Key Components:**
+
+- **PersistentVolume (PV):** Specifies the physical storage used for datasets and models.
+- **PersistentVolumeClaim (PVC):** Requests storage for use within the containers.
+
+### Deployments
+
+Deployments are defined in the `*-deployment.yaml` file. These deployments store the desired state of the pods like the number of replica sets, their update strategy and what image they will run on each container.
+
+### Customizing Service Images
+
+Each service is containerized into an image using Docker. To edit the services, a new image has to be built and used.
+
+To build and push Docker images, follow these steps:
+
+1. **Navigate to the service directory:**
+
+   ```bash
+   cd frontend
+   ```
+
+2. **Build and push the Docker image to Docker Hub:**
+
+   ```bash
+   docker build -t yourdockerhubusername/frontend:latest .
+   docker push yourdockerhubusername/frontend:latest
+   ```
+
+3. **Edit deployment file to use new image:**
+   
+   ```plaintext
+   image: yourdockerhubusername/frontend:latest
+   ```
+
+4. **Repeat the above steps for the `inference`, `processing`, and `training` services.**
 
 ## Detailed Service Descriptions
 
