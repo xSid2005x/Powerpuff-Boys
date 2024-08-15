@@ -219,24 +219,6 @@ To deploy the project using Kubernetes, follow these steps:
   - `styles.css`: Styling for the frontend.
   - `scripts.js`: JavaScript logic for interacting with backend services.
 
-### Training
-
-- **Service:** 
-  - Manages model training.
-  - More detailed information is provided in the `training/README.md`.
-
-### Processing
-
-- **Service:** 
-  - Handles dataset processing.
-  - More detailed information is provided in the `processing/README.md`.
-
-### Inference
-
-- **Service:** 
-  - Performs inference using the trained models.
-  - More detailed information is provided in the `inference/README.md`.
-
 ## Troubleshooting
 
 If you encounter issues, here are some troubleshooting steps:
