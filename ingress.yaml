@@ -33,21 +33,21 @@ spec:
       http:
         paths:
           - path: /process(/|$)(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: preprocess
                 port:
                   number: 80
           - path: /train(/|$)(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: train-service
                 port:
                   number: 80
           - path: /inference(/|$)(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: inference

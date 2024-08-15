@@ -306,21 +306,19 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease;
     margin: 10px 4px 10px 0;
-    width: 100%;
     box-sizing: border-box;
 }
 
 #uploadDrawing {
     background-color: #003466;
     color: #fff;
-    padding: 12px 0px;
+    padding: 12px;
     font-size: 14px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s ease;
     margin: 10px 0 10px 4px;
-    width: 100%;
     box-sizing: border-box;
 }
 
@@ -458,10 +456,6 @@ body {
     font-weight: 700;
     transition: background-color 0.3s ease;
     box-sizing: border-box; /* Ensures padding and borders are included in width */
-}
-
-.button-group button:hover {
-    background-color: #005fa3; /* Darker blue on hover */
 }
 
 #uploadtab {
