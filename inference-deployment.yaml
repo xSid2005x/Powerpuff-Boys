@@ -1,54 +1,51 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: inference-deployment
+  name: inference-deployment # Name of the deployment
 spec:
-  replicas: 1
+  replicas: 1 # Number of pod replicas (set to 1 for now)
   selector:
     matchLabels:
-      app: inference
-  revisionHistoryLimit: 5
-  progressDeadlineSeconds: 300
-  minReadySeconds: 10
+      app: inference # Label selector to identify the pods managed by this deployment
+  revisionHistoryLimit: 5 # Limits the number of old ReplicaSets to retain
+  progressDeadlineSeconds: 300 # Time to wait for a rollout to succeed
+  minReadySeconds: 10 # Minimum number of seconds for which a newly created pod should be ready
   strategy:
-    type: RollingUpdate
+    type: RollingUpdate # Strategy type for updates
     rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 1
+      maxUnavailable: 1 # Maximum number of pods that can be unavailable during the update process
+      maxSurge: 1 # Maximum number of pods that can be created over the desired number of pods
   template:
     metadata:
       labels:
-        app: inference
+        app: inference # Label applied to the pods for identification
     spec:
       containers:
-      - name: inference-container
-        image: siddharthraj/infer:latest
+      - name: inference-container # Name of the container within the pod
+        image: siddharthraj/infer:latest # Docker image used to create the container
         ports:
-        - containerPort: 5003
+        - containerPort: 5003 # Container port to expose
         volumeMounts:
-        - name: volume-models
-          mountPath: /app/volume/models
-        - name: config-volume
-          mountPath: /app/config
+        - name: volume-models # Mount the models volume
+          mountPath: /app/volume/models # Path in the container where the models are mounted
+        - name: config-volume # Mount the config volume
+          mountPath: /app/config # Path in the container where the config files are mounted
       volumes:
       - name: volume-models
         persistentVolumeClaim:
-          claimName: pvc-models
+          claimName: pvc-models # Use the PersistentVolumeClaim named pvc-models for models
       - name: config-volume
         configMap:
-          name: config-map
+          name: config-map # Use the ConfigMap named config-map for configuration
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: inference
+  name: inference # Name of the service
 spec:
   selector:
-    app: inference
+    app: inference # Selects pods with the label "app: inference"
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 5003
-
-
-
+      port: 80 # The port that the service will expose
+      targetPort: 5003 # The port on the container to which traffic will be forwarded
