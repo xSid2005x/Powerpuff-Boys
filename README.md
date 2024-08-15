@@ -25,8 +25,7 @@ This project demonstrates the deployment of an AI-based Handwritten Digits Recog
 
 The system is composed of several key components that work together to provide a full-fledged AI solution. Below is an overview of the system architecture:
 
-![image]([https://github.com/user-attachments/assets/a9989b9c-f857-43d2-bd85-e30572b556c2](https://github.com/user-attachments/assets/a9989b9c-f857-43d2-bd85-e30572b556c2))
-
+![architecture overview](https://github.com/user-attachments/assets/efc09838-7572-4cc9-a3a7-1ca19ee7697b)
 
 ### Architecture Overview
 
