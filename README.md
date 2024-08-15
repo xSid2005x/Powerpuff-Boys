@@ -40,41 +40,40 @@ The system is composed of several key components that work together to provide a
 The project is organized as follows:
 
 ```
-frontend/
-  ├── Dockerfile
-  ├── index.html
-  ├── scripts.js
-  ├── styles.css
-  ├── favicon.ico
-  ├── loading-icon.gif
-  └── web-deployment.yaml
-
-inference/
-  ├── Dockerfile
-  ├── inference-app.py
-  ├── requirements.txt
-  └── inference-deployment.yaml
-
-processing/
-  ├── Dockerfile
-  ├── process-app.py
-  ├── requirements.txt
-  └── process-deployment.yaml
-
-training/
-  ├── Dockerfile
-  ├── train-app.py
-  ├── requirements.txt
-  └── train-deployment.yaml
-
-config/
-  └── config.json
-
-kubernetes/
-  ├── configmap.yaml
-  ├── volumes.yaml
-  ├── ingress.yaml
-  └── ingress.yaml
+/powerpuff-boys
+├── frontend
+│   ├── css
+│   │   └── styles.css
+│   ├── images
+│   │   ├── background.jpg
+│   │   ├── favicon.ico
+│   │   ├── loading-icon.gif
+│   │   └── logo.png
+│   └── static
+│       ├── app.py
+│       ├── Dockerfile
+│       ├── index.html
+│       └── script.js
+├── inference
+│   ├── Dockerfile
+│   ├── inference-app.py
+│   └── requirements.txt
+├── processing
+│   ├── Dockerfile
+│   ├── process-app.py
+│   └── requirements.txt
+├── training
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── train-app.py
+├── configmap.yaml
+├── inference-deployment.yaml
+├── ingress.yaml
+├── process-deployment.yaml
+├── train-deployment.yaml
+├── volumes.yaml
+├── web-deployment.yaml
+└── README.md
 ```
 
 - **Frontend:** Contains the web interface for interacting with the system.
